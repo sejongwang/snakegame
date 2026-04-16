@@ -88,6 +88,8 @@ h1 {
 }
 
 #warning-body {
+  flex: 1 1 0;
+  min-height: 0;
   padding: 18px 24px;
   overflow-y: auto;
   line-height: 1.65;

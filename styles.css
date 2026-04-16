@@ -1,0 +1,30 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #0a0a0a;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Menlo, Monaco, "Courier New", monospace;
+}
+
+#terminal {
+  padding: 12px;
+  background: #000;
+  border: 1px solid #1f1f1f;
+  border-radius: 6px;
+  box-shadow: 0 0 40px rgba(0, 255, 0, 0.08);
+}
+
+h1 {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #00ff88;
+  font-size: 14px;
+  letter-spacing: 2px;
+  margin: 0;
+  opacity: 0.7;
+}

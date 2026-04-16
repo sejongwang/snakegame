@@ -247,7 +247,7 @@
       });
     }
 
-    document.addEventListener('keydown', (e) => {
+    function handleKey(e) {
       const code = e.code;
       const up = code === 'ArrowUp' || code === 'KeyW';
       const down = code === 'ArrowDown' || code === 'KeyS';
@@ -255,11 +255,11 @@
       const right = code === 'ArrowRight' || code === 'KeyD';
       const restart = code === 'KeyR';
 
-      if (code.startsWith('Arrow')) e.preventDefault();
+      if (!up && !down && !left && !right && !restart) return false;
 
       if (!started || gameOver) {
         if (restart || !started) init();
-        return;
+        return true;
       }
 
       if (up && dir.y !== 1) nextDir = { x: 0, y: -1 };
@@ -267,8 +267,23 @@
       else if (left && dir.x !== 1) nextDir = { x: -1, y: 0 };
       else if (right && dir.x !== -1) nextDir = { x: 1, y: 0 };
       else if (restart) init();
+      return true;
+    }
+
+    term.attachCustomKeyEventHandler((e) => {
+      if (e.type !== 'keydown') return true;
+      if (handleKey(e)) {
+        e.preventDefault();
+        return false;
+      }
+      return true;
     });
 
+    document.addEventListener('keydown', (e) => {
+      if (handleKey(e) && e.code.startsWith('Arrow')) e.preventDefault();
+    });
+
+    term.focus();
     splash();
   </script>
 </body>

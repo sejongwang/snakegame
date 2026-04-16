@@ -7,6 +7,15 @@ html, body {
   font-family: Menlo, Monaco, "Courier New", monospace;
 }
 
+body {
+  animation: invertBlink 0.4s step-end infinite;
+}
+
+@keyframes invertBlink {
+  0%, 100% { filter: invert(0); }
+  50%      { filter: invert(1); }
+}
+
 #terminal {
   position: fixed;
   top: 0;

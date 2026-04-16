@@ -7,7 +7,7 @@ html, body {
   font-family: Menlo, Monaco, "Courier New", monospace;
 }
 
-body {
+html {
   animation: invertBlink 0.4s step-end infinite;
 }
 

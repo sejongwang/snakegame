@@ -7,7 +7,7 @@ html, body {
   font-family: Menlo, Monaco, "Courier New", monospace;
 }
 
-html {
+html.chaos {
   animation: invertBlink 0.4s step-end infinite;
 }
 
@@ -47,4 +47,108 @@ h1 {
   z-index: 100;
   pointer-events: none;
   user-select: none;
+}
+
+#warning-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+}
+
+#warning-box {
+  width: min(720px, 100%);
+  max-height: 90vh;
+  background: #0d0d0d;
+  color: #e8e8e8;
+  border: 2px solid #ff3333;
+  border-radius: 8px;
+  box-shadow: 0 0 60px rgba(255, 50, 50, 0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#warning-title {
+  margin: 0;
+  padding: 18px 22px;
+  background: #1a0606;
+  color: #ff6b6b;
+  font-size: 15px;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #3a1010;
+  text-align: center;
+  font-weight: 700;
+}
+
+#warning-body {
+  padding: 18px 24px;
+  overflow-y: auto;
+  line-height: 1.65;
+  font-size: 14px;
+  color: #d4d4d4;
+  scrollbar-width: thin;
+  scrollbar-color: #666 #111;
+}
+
+#warning-body h3 {
+  color: #ff9b3b;
+  font-size: 14px;
+  margin: 20px 0 8px;
+  letter-spacing: 0.5px;
+}
+
+#warning-body p {
+  margin: 0 0 12px;
+  text-align: justify;
+  word-break: keep-all;
+}
+
+#warning-body ul {
+  margin: 8px 0 12px;
+  padding-left: 22px;
+}
+
+#warning-body li {
+  margin-bottom: 4px;
+}
+
+#warning-body .final {
+  color: #ff6b6b;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 18px;
+  font-size: 15px;
+  letter-spacing: 0.5px;
+}
+
+#warning-dismiss {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 16px;
+  border: 0;
+  border-top: 1px solid #3a1010;
+  background: #2a0808;
+  color: #ff8080;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+#warning-dismiss:hover {
+  background: #4a0f0f;
+  color: #ffb0b0;
+}
+
+#warning-dismiss:active {
+  background: #6a1515;
 }

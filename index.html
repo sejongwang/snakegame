@@ -8,6 +8,53 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div id="warning-modal" role="dialog" aria-modal="true" aria-labelledby="warning-title">
+    <div id="warning-box">
+      <h2 id="warning-title">[ !! ] SPACE 를 누르기 전에 반드시 읽어주세요 [ !! ]</h2>
+      <div id="warning-body">
+        <p>이 페이지에는 "카오스 모드"라고 이름 붙인 시각 효과가 포함되어 있으며, 이를 활성화하려면 키보드의 스페이스(SPACE) 키를 눌러야 합니다. 본 고지는 해당 효과의 위험성, 책임 범위, 권장 사용 환경, 응급 대응 절차를 상세히 안내하는 문서이며, 귀하가 스페이스 키를 누르기 전에 반드시 이해해야 할 내용을 담고 있습니다. 경고를 모두 읽지 않고 버튼을 누르는 행위만으로도 모든 책임이 귀하에게 귀속됨을 명시합니다.</p>
+
+        <h3>1. 효과의 기술적 특성</h3>
+        <p>카오스 모드가 활성화되면 웹페이지 전체가 200밀리초(0.2초) 주기로 색상 반전 필터를 토글합니다. 이는 초당 약 5회의 급격한 휘도 변화를 의미하며, 국제전기통신연합(ITU)의 방송 콘텐츠 안전 가이드라인과 영국 Ofcom 방송 기준, 일본 NHK의 영상 제작 지침이 공통적으로 "위험 주파수 대역"으로 분류하는 3~60Hz 범위의 한가운데에 해당합니다. 검정 ↔ 흰색이라는 최대 대비의 반전이므로 실효 자극 강도는 단순 깜박임보다 훨씬 큽니다. 해당 효과는 순수 CSS 필터로 구현되어 있으며, 브라우저의 "모션 줄이기" 시스템 설정이 적용되지 않을 수 있습니다.</p>
+
+        <h3>2. 광과민성 발작이란</h3>
+        <p>광과민성 발작(Photosensitive Epileptic Seizure, PSE)은 특정 주파수의 섬광, 급격한 명암 대비 변화, 또는 반복되는 기하학 패턴에 노출되었을 때 뇌의 신경세포가 비정상적으로 동기화되어 발화하는 신경학적 반응입니다. 발작 중에는 의식 소실, 전신 근육 경직(강직기), 리듬감 있는 경련(간대기), 호흡 불규칙, 침흘림, 요실금 등이 나타날 수 있으며, 일부는 발작 후 수 시간 동안 혼돈 상태(postictal state)가 지속되기도 합니다. 발작 자체보다 2차 외상 — 넘어지며 머리를 부딪히거나, 계단에서 낙상하거나, 구토물이 기도로 들어가는 — 쪽이 더 치명적인 경우가 많습니다. PSE는 평생 한 번도 경험해보지 않은 사람에게서도 갑자기 처음 발현될 수 있으며, 유전적 소인을 가지고 있음에도 자각하지 못하는 경우가 상당수입니다.</p>
+
+        <h3>3. 역사적 사례</h3>
+        <p>1997년 12월 16일 일본에서 방영된 포켓몬스터 38화 "전뇌전사 폴리곤"에서 약 12Hz의 적청 교차 섬광이 약 4초간 화면을 채웠고, 그 결과 685명의 아동·청소년이 구토, 경련, 의식 소실 등의 증상으로 병원에 이송되었습니다. 이 사건은 방송업계 전체의 안전 기준을 다시 쓰게 만든 계기가 되었으며, 현재 대부분의 국가에서 방송 콘텐츠는 3Hz 이하, 화면 면적의 25% 이하로 섬광을 제한합니다. 본 페이지의 5Hz 전면 반전 효과는 그 방송 기준을 명백히 초과합니다.</p>
+
+        <h3>4. 다음에 해당하시는 분은 절대 스페이스를 누르지 마십시오</h3>
+        <ul>
+          <li>과거에 뇌전증, 간질, 원인불명 실신 이력이 있는 분</li>
+          <li>직계 가족(부모/형제자매)에 뇌전증 환자가 있는 분</li>
+          <li>최근 24시간 내 수면 시간이 6시간 미만인 분</li>
+          <li>현재 발열, 감기, 과로, 숙취, 공복 상태인 분</li>
+          <li>편두통(특히 시각적 전조가 나타나는 유형) 병력이 있는 분</li>
+          <li>항우울제, 항정신병제, 벤조디아제핀 등을 복용 중인 분</li>
+          <li>임신 중 또는 임신 가능성이 있는 분</li>
+          <li>14세 이하 소아청소년 (뇌 발달기 민감성이 높음)</li>
+          <li>음주 후 2시간 이내이신 분</li>
+          <li>디스플레이 작업을 장시간 한 직후로 눈이 피로한 분</li>
+        </ul>
+
+        <h3>5. 권장 사용 환경 (굳이 체험하신다면)</h3>
+        <p>1) 주변 조명을 충분히 밝게 유지하십시오. 어두운 방에서 밝은 화면의 급변을 보는 것은 위험성을 수 배 증가시킵니다. 2) 화면과 최소 60cm 이상 거리를 두십시오. 가까울수록 자극이 시야 주변부까지 도달해 더 위험합니다. 3) 브라우저를 전체화면으로 전환하지 마십시오. 주변 고정 요소가 시야에 함께 들어와야 뇌의 기준점이 유지됩니다. 4) 한 세션당 10초를 초과하지 마십시오. 10초 노출 후 최소 30초의 휴식이 필요합니다. 5) 혼자 있는 환경에서 체험하지 마십시오. 응급 시 신고가 가능한 성인이 근처에 있어야 합니다. 6) 이어폰으로 고음량 오디오를 함께 사용하지 마십시오. 청각-시각 동시 자극은 발작 역치를 낮춥니다.</p>
+
+        <h3>6. 발작 발생 시 응급 대응</h3>
+        <p>본인 또는 주변인이 카오스 모드 노출 중 의식이 흐려짐, 눈의 무의식적 상방 편위, 근육 강직 및 리드미컬한 떨림, 입가 거품 또는 침흘림, 창백 또는 청색 안색 변화 중 어느 하나라도 보인다면 즉시 다음 순서대로 대응하십시오: (1) 브라우저 탭을 즉시 닫거나 환자의 눈을 화면에서 돌리게 한다. (2) 환자를 바닥에 안전하게 눕히고 머리 아래 부드러운 물건을 받친다. (3) 주변의 날카롭거나 단단한 물체를 치운다. (4) 입에 어떤 것도 넣지 않는다 — "혀를 깨물까 봐 수건을 물린다"는 속설은 잘못된 정보이며 오히려 질식 위험을 만든다. (5) 발작 지속 시간을 측정한다 — 5분 이상 지속되거나 발작 직후 즉시 재발하면 생명이 위험할 수 있으므로 즉시 119에 신고한다. (6) 발작이 짧게 끝났더라도 반드시 신경과에서 뇌파검사(EEG)를 받는다. 첫 발작은 향후 재발 가능성이 매우 높다.</p>
+
+        <h3>7. 솔직한 권유</h3>
+        <p>이 경고문을 여기까지 읽은 귀하가 평범한 20~30대 성인이고 특별한 병력이 없다면, 스페이스를 한두 번 눌러도 실제 발작이 발생할 확률은 0.1% 미만입니다. 그러나 "나는 괜찮을 거야"라고 생각하던 사람 중 일정 비율은 자신이 미진단 광과민성 소인을 가지고 있음을 모른 채 살아갑니다. 당신이 그 소수에 속하지 않는다는 100% 확신이 없다면, 스페이스는 누르지 않는 것이 최선입니다. 스페이스 없이도 평범 모드의 스네이크 게임은 충분히 재미있습니다. 화면이 뒤집히지 않아도, 터미널이 튕기지 않아도, 뱀은 여전히 꼬리를 자르며 사과를 먹습니다. 그 정도면 충분하지 않겠습니까.</p>
+
+        <h3>8. 면책 및 동의</h3>
+        <p>본 웹사이트는 개인이 학습 및 오락 목적으로 제작한 프로젝트이며, 의료 기기가 아닙니다. 본 고지를 읽고도 스페이스 키를 누른 결과 발생한 모든 신체적·정신적·경제적 피해에 대해 제작자, 호스팅 사업자, 관련 제삼자는 어떠한 법적 책임도 지지 않습니다. 귀하의 건강 상태 판단과 그에 따른 모든 행위의 결과는 전적으로 귀하의 책임이며, 의료적 조언이 필요한 경우 자격 있는 의료 전문가에게 문의하시기 바랍니다. 아래 버튼을 누르는 순간 귀하는 본 고지의 모든 내용에 동의한 것으로 간주됩니다.</p>
+
+        <p class="final">조심하십시오. 한 번 누르면 되돌릴 수 없는 경험이 있을 수 있습니다.</p>
+      </div>
+      <button id="warning-dismiss" type="button">위험을 이해했고 진행합니다</button>
+    </div>
+  </div>
+
   <h1>~/ TERMINAL-SNAKE :: PONG-BALL</h1>
   <div id="terminal"></div>
 
@@ -59,6 +106,8 @@
     let snake, dir, nextDir, food, bigFood, bigFoodTtl, pendingGrowth;
     let score, best = 0, gameOver, started, snakeTimer;
     let speedMult = 1;
+    let chaosMode = false;
+    let ballRafId = 0;
     const SPEED_PER_GROWTH = 0.5;
 
     function randEmptyCell() {
@@ -96,8 +145,9 @@
 
     function drawStatus() {
       const bigPart = bigFood ? `  ${YELLOW}BIG:${String(bigFoodTtl).padStart(2, '0')}${RESET}${YELLOW}` : '';
-      const speedPart = `  ${CYAN}x${speedMult.toFixed(1)}${RESET}${YELLOW}`;
-      const line = ` score:${String(score).padStart(3, '0')}  best:${String(best).padStart(3, '0')}${bigPart}${speedPart}   WASD move   R:restart `;
+      const speedPart = chaosMode ? `  ${CYAN}x${speedMult.toFixed(1)}${RESET}${YELLOW}` : '';
+      const modePart = chaosMode ? `  ${RED}${BOLD}[CHAOS]${RESET}${YELLOW}` : `  ${DIM}SPACE=chaos${RESET}${YELLOW}`;
+      const line = ` score:${String(score).padStart(3, '0')}  best:${String(best).padStart(3, '0')}${bigPart}${speedPart}   WASD  R:restart${modePart} `;
       term.write(at(STATUS_ROW, 1) + ESC + '2K' + YELLOW + line + RESET);
     }
 
@@ -212,25 +262,32 @@
         '',
         '   +======================================+',
         '   |       T E R M I N A L   S N A K E    |',
-        '   |           P O N G   B A L L          |',
         '   +======================================+',
         '',
-        '     *  이 터미널 창 전체가 공입니다',
-        '     *  벽에 부딪히면 자동으로 튕겨나감',
-        '     *  뱀이 길어질수록 공이 빨라져요',
+        '   [ !! WARNING !! ]',
+        '   SPACE 를 누르면 카오스 모드가 켜집니다:',
+        '     - 0.2초 주기로 화면 전체 색 반전',
+        '     - 터미널 창이 사방으로 튕김',
+        '     - 뱀이 길어질수록 창이 더 빨라짐',
         '',
-        '     *  뱀은 W A S D 로 조작',
-        '     *  R 로 재시작',
+        '   >> 광과민성 발작(photosensitive seizure) <<',
+        '   >> 유발 가능성이 있으니 조심하세요.      <<',
         '',
-        '        >>  press any key to start  <<',
+        '   뱀 조작 : W A S D     재시작 : R',
+        '   평범 모드 : 아무 키 (SPACE 제외)',
+        '   카오스 모드 : SPACE',
       ];
       art.forEach((line, i) => {
         let color = WHITE;
-        if (i >= 1 && i <= 4) color = BRIGHT_GREEN + BOLD;
-        else if (i >= 6 && i <= 8) color = CYAN;
-        else if (i === 10 || i === 11) color = BOLD + GREEN;
-        else if (i === 13) color = BOLD + YELLOW;
-        term.write(at(2 + i, 4) + color + line + RESET);
+        if (i >= 1 && i <= 3) color = BRIGHT_GREEN + BOLD;
+        else if (i === 5) color = BOLD + RED;
+        else if (i === 6) color = YELLOW;
+        else if (i >= 7 && i <= 10) color = CYAN;
+        else if (i === 12 || i === 13) color = BOLD + RED;
+        else if (i === 15) color = BOLD + GREEN;
+        else if (i === 16) color = DIM + GREEN;
+        else if (i === 17) color = BOLD + YELLOW;
+        term.write(at(2 + i, 3) + color + line + RESET);
       });
     }
 
@@ -280,6 +337,7 @@
     }
 
     function stepBall() {
+      if (!chaosMode) { ballRafId = 0; return; }
       const w = termEl.offsetWidth;
       const h = termEl.offsetHeight;
       const maxX = Math.max(0, window.innerWidth - w);
@@ -304,7 +362,19 @@
       }
 
       placeBall();
-      requestAnimationFrame(stepBall);
+      ballRafId = requestAnimationFrame(stepBall);
+    }
+
+    function enableChaos() {
+      if (chaosMode) return;
+      chaosMode = true;
+      document.documentElement.classList.add('chaos');
+      speedMult = 1;
+      centerBall();
+      resetBallVelocity();
+      applySpeedMult();
+      if (!ballRafId) ballRafId = requestAnimationFrame(stepBall);
+      if (started) drawStatus();
     }
 
     window.addEventListener('resize', () => {
@@ -317,7 +387,7 @@
 
     // ===================== Input =====================
     const GAME_KEYS = new Set([
-      'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyR',
+      'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyR', 'Space',
     ]);
 
     function handleKey(e) {
@@ -325,6 +395,12 @@
       if (!GAME_KEYS.has(code)) return true;
       e.preventDefault();
       if (e.stopPropagation) e.stopPropagation();
+
+      if (code === 'Space') {
+        if (!started) initGame();
+        enableChaos();
+        return false;
+      }
 
       if (!started) {
         initGame();
@@ -351,11 +427,19 @@
       return handleKey(e);
     });
 
+    // ===================== Warning modal dismiss =====================
+    const warnModal = document.getElementById('warning-modal');
+    const warnBtn = document.getElementById('warning-dismiss');
+    if (warnBtn) {
+      warnBtn.addEventListener('click', () => {
+        warnModal.remove();
+        document.documentElement.focus();
+      });
+    }
+
     // ===================== Boot =====================
     splash();
     centerBall();
-    resetBallVelocity();
-    requestAnimationFrame(stepBall);
   </script>
 </body>
 </html>

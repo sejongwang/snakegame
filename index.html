@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Terminal Snake - Duel</title>
+  <title>Terminal Snake :: Pong Ball</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>~/ TERMINAL-SNAKE :: DUEL</h1>
+  <h1>~/ TERMINAL-SNAKE :: PONG-BALL</h1>
   <div id="terminal"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
   <script>
     const term = new Terminal({
-      cols: 72,
-      rows: 24,
+      cols: 52,
+      rows: 22,
       fontFamily: 'Menlo, Monaco, "Courier New", monospace',
-      fontSize: 16,
+      fontSize: 15,
       cursorBlink: false,
       theme: {
         background: '#000000',
@@ -25,8 +25,10 @@
         cursor: '#00ff00',
       },
     });
-    term.open(document.getElementById('terminal'));
+    const termEl = document.getElementById('terminal');
+    term.open(termEl);
 
+    // ===================== ANSI helpers =====================
     const ESC = '\x1b[';
     const HIDE = ESC + '?25l';
     const CLEAR = ESC + '2J' + ESC + 'H';
@@ -35,311 +37,308 @@
     const DIM = ESC + '2m';
     const GREEN = ESC + '32m';
     const BRIGHT_GREEN = ESC + '92m';
-    const CYAN = ESC + '36m';
-    const BRIGHT_CYAN = ESC + '96m';
     const RED = ESC + '31m';
     const YELLOW = ESC + '33m';
+    const CYAN = ESC + '36m';
     const GRAY = ESC + '90m';
     const WHITE = ESC + '97m';
     const at = (r, c) => ESC + r + ';' + c + 'H';
 
-    const BOARD_W = 28;
-    const BOARD_H = 16;
-    const BOARD_GAP = 6;
+    // ===================== Snake game =====================
+    const WIDTH = 40;
+    const HEIGHT = 16;
     const TICK_MS = 110;
     const BIG_FOOD_CHANCE = 0.3;
     const BIG_FOOD_TTL = 90;
     const BIG_FOOD_GROWTH = 5;
 
-    const LABEL_ROW = 2;
-    const TOP = 3;
-    const LEFT_COL = 2;
-    const RIGHT_COL = LEFT_COL + BOARD_W + 2 + BOARD_GAP;
-    const BOTTOM = TOP + BOARD_H + 1;
-    const HINT_ROW = BOTTOM + 2;
-    const TOTAL_SPAN = (RIGHT_COL + BOARD_W + 1) - LEFT_COL + 1;
+    const BOARD_TOP = 3;
+    const BOARD_LEFT = 6;
+    const STATUS_ROW = BOARD_TOP + HEIGHT + 2;
 
-    let boards = [];
-    let timer = null;
-    let started = false;
+    let snake, dir, nextDir, food, bigFood, bigFoodTtl, pendingGrowth;
+    let score, best = 0, gameOver, started, snakeTimer;
+    let speedMult = 1;
+    const SPEED_PER_GROWTH = 0.5;
 
-    function makeBoard(opts) {
-      return {
-        colOff: opts.colOff,
-        rowOff: TOP,
-        label: opts.label,
-        color: opts.color,
-        headColor: opts.headColor,
-        snake: [],
-        dir: { x: 1, y: 0 },
-        nextDir: { x: 1, y: 0 },
-        food: null,
-        bigFood: null,
-        bigFoodTtl: 0,
-        pendingGrowth: 0,
-        score: 0,
-        gameOver: false,
-      };
-    }
-
-    function randEmptyCell(b) {
+    function randEmptyCell() {
       while (true) {
         const f = {
-          x: Math.floor(Math.random() * BOARD_W),
-          y: Math.floor(Math.random() * BOARD_H),
+          x: Math.floor(Math.random() * WIDTH),
+          y: Math.floor(Math.random() * HEIGHT),
         };
-        const onSnake = b.snake.some(s => s.x === f.x && s.y === f.y);
-        const onFood = b.food && f.x === b.food.x && f.y === b.food.y;
-        const onBig = b.bigFood && f.x === b.bigFood.x && f.y === b.bigFood.y;
+        const onSnake = snake.some(s => s.x === f.x && s.y === f.y);
+        const onFood = food && f.x === food.x && f.y === food.y;
+        const onBig = bigFood && f.x === bigFood.x && f.y === bigFood.y;
         if (!onSnake && !onFood && !onBig) return f;
       }
     }
 
-    function boardCell(b, x, y) {
-      return at(b.rowOff + 1 + y, b.colOff + 1 + x);
+    function cellAt(x, y) {
+      return at(BOARD_TOP + 1 + y, BOARD_LEFT + 1 + x);
     }
 
-    function drawBorder(b) {
-      const top = '+' + '-'.repeat(BOARD_W) + '+';
-      term.write(at(b.rowOff, b.colOff) + GRAY + top + RESET);
-      for (let r = 0; r < BOARD_H; r++) {
-        term.write(at(b.rowOff + 1 + r, b.colOff) + GRAY + '|' + RESET);
-        term.write(at(b.rowOff + 1 + r, b.colOff + BOARD_W + 1) + GRAY + '|' + RESET);
+    function drawBorder() {
+      const top = '+' + '-'.repeat(WIDTH) + '+';
+      term.write(at(BOARD_TOP, BOARD_LEFT) + GRAY + top + RESET);
+      for (let r = 0; r < HEIGHT; r++) {
+        term.write(at(BOARD_TOP + 1 + r, BOARD_LEFT) + GRAY + '|' + RESET);
+        term.write(at(BOARD_TOP + 1 + r, BOARD_LEFT + WIDTH + 1) + GRAY + '|' + RESET);
       }
-      term.write(at(b.rowOff + BOARD_H + 1, b.colOff) + GRAY + top + RESET);
+      term.write(at(BOARD_TOP + HEIGHT + 1, BOARD_LEFT) + GRAY + top + RESET);
     }
 
-    function drawLabel(b) {
-      term.write(at(LABEL_ROW, b.colOff) + ' '.repeat(BOARD_W + 2));
-      let s = '';
-      s += b.color + BOLD + b.label + RESET;
-      s += '  ' + WHITE + `score:${String(b.score).padStart(3, '0')}` + RESET;
-      if (b.bigFood) s += '  ' + YELLOW + BOLD + `BIG:${String(b.bigFoodTtl).padStart(2, '0')}` + RESET;
-      if (b.gameOver) s += '  ' + RED + BOLD + 'DEAD' + RESET;
-      term.write(at(LABEL_ROW, b.colOff) + s);
-    }
-
-    function clearPlayArea(b) {
-      for (let r = 0; r < BOARD_H; r++) {
-        term.write(at(b.rowOff + 1 + r, b.colOff + 1) + ' '.repeat(BOARD_W));
+    function clearPlayArea() {
+      for (let r = 0; r < HEIGHT; r++) {
+        term.write(at(BOARD_TOP + 1 + r, BOARD_LEFT + 1) + ' '.repeat(WIDTH));
       }
     }
 
-    function drawBoard(b) {
-      clearPlayArea(b);
-      if (b.food) term.write(boardCell(b, b.food.x, b.food.y) + RED + BOLD + '*' + RESET);
-      if (b.bigFood) {
-        const blink = b.bigFoodTtl <= 20 && b.bigFoodTtl % 2 === 0;
+    function drawStatus() {
+      const bigPart = bigFood ? `  ${YELLOW}BIG:${String(bigFoodTtl).padStart(2, '0')}${RESET}${YELLOW}` : '';
+      const speedPart = `  ${CYAN}x${speedMult.toFixed(1)}${RESET}${YELLOW}`;
+      const line = ` score:${String(score).padStart(3, '0')}  best:${String(best).padStart(3, '0')}${bigPart}${speedPart}   WASD move   R:restart `;
+      term.write(at(STATUS_ROW, 1) + ESC + '2K' + YELLOW + line + RESET);
+    }
+
+    function draw() {
+      clearPlayArea();
+      term.write(cellAt(food.x, food.y) + RED + BOLD + '*' + RESET);
+      if (bigFood) {
+        const blink = bigFoodTtl <= 20 && bigFoodTtl % 2 === 0;
         const color = blink ? RED + BOLD : YELLOW + BOLD;
-        term.write(boardCell(b, b.bigFood.x, b.bigFood.y) + color + 'O' + RESET);
+        term.write(cellAt(bigFood.x, bigFood.y) + color + 'O' + RESET);
       }
-      b.snake.forEach((s, i) => {
+      snake.forEach((s, i) => {
         const ch = i === 0 ? '@' : 'o';
-        const color = i === 0 ? b.headColor + BOLD : b.color;
-        term.write(boardCell(b, s.x, s.y) + color + ch + RESET);
+        const color = i === 0 ? BRIGHT_GREEN + BOLD : GREEN;
+        term.write(cellAt(s.x, s.y) + color + ch + RESET);
       });
-      if (b.gameOver) drawDeadOverlay(b);
-      drawLabel(b);
+      drawStatus();
     }
 
-    function drawDeadOverlay(b) {
-      const text = 'GAME OVER';
-      const row = b.rowOff + Math.floor(BOARD_H / 2) + 1;
-      const col = b.colOff + 1 + Math.floor((BOARD_W - text.length) / 2);
-      term.write(at(row, col) + BOLD + RED + text + RESET);
-    }
-
-    function trySpawnBigFood(b) {
-      if (b.bigFood) return;
+    function trySpawnBigFood() {
+      if (bigFood) return;
       if (Math.random() < BIG_FOOD_CHANCE) {
-        b.bigFood = randEmptyCell(b);
-        b.bigFoodTtl = BIG_FOOD_TTL;
+        bigFood = randEmptyCell();
+        bigFoodTtl = BIG_FOOD_TTL;
       }
     }
 
-    function tickBoard(b) {
-      if (b.gameOver) return;
-      b.dir = b.nextDir;
-      const head = { x: b.snake[0].x + b.dir.x, y: b.snake[0].y + b.dir.y };
+    function tick() {
+      if (gameOver) return;
+      dir = nextDir;
+      const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
       if (
-        head.x < 0 || head.x >= BOARD_W ||
-        head.y < 0 || head.y >= BOARD_H ||
-        b.snake.some(s => s.x === head.x && s.y === head.y)
+        head.x < 0 || head.x >= WIDTH ||
+        head.y < 0 || head.y >= HEIGHT ||
+        snake.some(s => s.x === head.x && s.y === head.y)
       ) {
-        b.gameOver = true;
-        drawBoard(b);
-        return;
+        return end();
       }
-      if (b.bigFood) {
-        b.bigFoodTtl--;
-        if (b.bigFoodTtl <= 0) b.bigFood = null;
+      if (bigFood) {
+        bigFoodTtl--;
+        if (bigFoodTtl <= 0) bigFood = null;
       }
-      b.snake.unshift(head);
-      if (head.x === b.food.x && head.y === b.food.y) {
-        b.score++;
-        b.food = randEmptyCell(b);
-        trySpawnBigFood(b);
-      } else if (b.bigFood && head.x === b.bigFood.x && head.y === b.bigFood.y) {
-        b.score += BIG_FOOD_GROWTH;
-        b.pendingGrowth += BIG_FOOD_GROWTH - 1;
-        b.bigFood = null;
-      } else if (b.pendingGrowth > 0) {
-        b.pendingGrowth--;
+      snake.unshift(head);
+      if (head.x === food.x && head.y === food.y) {
+        score++;
+        if (score > best) best = score;
+        food = randEmptyCell();
+        trySpawnBigFood();
+        bumpSpeed(1);
+      } else if (bigFood && head.x === bigFood.x && head.y === bigFood.y) {
+        score += BIG_FOOD_GROWTH;
+        if (score > best) best = score;
+        pendingGrowth += BIG_FOOD_GROWTH - 1;
+        bigFood = null;
+        bumpSpeed(BIG_FOOD_GROWTH);
+      } else if (pendingGrowth > 0) {
+        pendingGrowth--;
       } else {
-        b.snake.pop();
+        snake.pop();
       }
-      drawBoard(b);
+      draw();
     }
 
-    function initBoard(b) {
-      const midY = Math.floor(BOARD_H / 2);
-      b.snake = [
-        { x: 5, y: midY },
-        { x: 4, y: midY },
-        { x: 3, y: midY },
+    function end() {
+      gameOver = true;
+      clearInterval(snakeTimer);
+      const lines = [
+        '+------------------------+',
+        '|      GAME  OVER        |',
+        '|                        |',
+        `|    score: ${String(score).padStart(3, '0')}          |`,
+        '|   press R to restart   |',
+        '+------------------------+',
       ];
-      b.dir = { x: 1, y: 0 };
-      b.nextDir = b.dir;
-      b.score = 0;
-      b.pendingGrowth = 0;
-      b.bigFood = null;
-      b.bigFoodTtl = 0;
-      b.gameOver = false;
-      b.food = randEmptyCell(b);
-    }
-
-    function drawVsBanner() {
-      const col = LEFT_COL + BOARD_W + 2 + Math.floor(BOARD_GAP / 2) - 1;
-      const midRow = TOP + Math.floor(BOARD_H / 2);
-      term.write(at(midRow - 1, col) + DIM + YELLOW + 'vs' + RESET);
-      term.write(at(midRow, col) + BOLD + YELLOW + 'VS' + RESET);
-      term.write(at(midRow + 1, col) + DIM + YELLOW + 'vs' + RESET);
-    }
-
-    function drawHint() {
-      const hint = 'R : restart   |   WASD <- left snake   |   arrows -> right snake';
-      const col = LEFT_COL + Math.max(0, Math.floor((TOTAL_SPAN - hint.length) / 2));
-      term.write(at(HINT_ROW, LEFT_COL) + ESC + '2K');
-      term.write(at(HINT_ROW, col) + DIM + hint + RESET);
-    }
-
-    function drawWinnerOverlay() {
-      const [L, R] = boards;
-      let msg;
-      if (L.score > R.score) msg = '<<<  LEFT (WASD) WINS  >>>';
-      else if (R.score > L.score) msg = '<<<  RIGHT (ARROWS) WINS  >>>';
-      else msg = '<<<  D R A W  >>>';
-      const col = LEFT_COL + Math.max(0, Math.floor((TOTAL_SPAN - msg.length) / 2));
-      term.write(at(HINT_ROW, LEFT_COL) + ESC + '2K');
-      term.write(at(HINT_ROW, col) + BOLD + YELLOW + msg + RESET);
-      const tail = `final  ${L.score}  :  ${R.score}   -   press R to play again`;
-      const tcol = LEFT_COL + Math.max(0, Math.floor((TOTAL_SPAN - tail.length) / 2));
-      term.write(at(HINT_ROW + 1, LEFT_COL) + ESC + '2K');
-      term.write(at(HINT_ROW + 1, tcol) + DIM + tail + RESET);
-    }
-
-    function clearLine(row) {
-      term.write(at(row, 1) + ESC + '2K');
-    }
-
-    function tickAll() {
-      boards.forEach(b => tickBoard(b));
-      if (boards.every(b => b.gameOver)) {
-        clearInterval(timer);
-        timer = null;
-        drawWinnerOverlay();
-      }
-    }
-
-    function initAll() {
-      if (timer) clearInterval(timer);
-      boards = [
-        makeBoard({ colOff: LEFT_COL,  label: '[ WASD ]',   color: BRIGHT_GREEN, headColor: BRIGHT_GREEN }),
-        makeBoard({ colOff: RIGHT_COL, label: '[ ARROWS ]', color: BRIGHT_CYAN,  headColor: BRIGHT_CYAN }),
-      ];
-      boards.forEach(b => initBoard(b));
-      started = true;
-
-      term.write(HIDE + CLEAR);
-      clearLine(HINT_ROW);
-      clearLine(HINT_ROW + 1);
-      drawVsBanner();
-      boards.forEach(b => {
-        drawBorder(b);
-        drawBoard(b);
+      const startRow = BOARD_TOP + Math.floor((HEIGHT - lines.length) / 2) + 1;
+      const startCol = BOARD_LEFT + 1 + Math.floor((WIDTH - lines[0].length) / 2);
+      lines.forEach((l, i) => {
+        term.write(at(startRow + i, startCol) + BOLD + RED + l + RESET);
       });
-      drawHint();
-      timer = setInterval(tickAll, TICK_MS);
+      drawStatus();
+    }
+
+    function initGame() {
+      snake = [
+        { x: 10, y: Math.floor(HEIGHT / 2) },
+        { x: 9, y: Math.floor(HEIGHT / 2) },
+        { x: 8, y: Math.floor(HEIGHT / 2) },
+      ];
+      dir = { x: 1, y: 0 };
+      nextDir = dir;
+      score = 0;
+      pendingGrowth = 0;
+      bigFood = null;
+      bigFoodTtl = 0;
+      gameOver = false;
+      started = true;
+      food = randEmptyCell();
+      speedMult = 1;
+      resetBallVelocity();
+      term.write(HIDE + CLEAR);
+      drawBorder();
+      draw();
+      if (snakeTimer) clearInterval(snakeTimer);
+      snakeTimer = setInterval(tick, TICK_MS);
     }
 
     function splash() {
       term.write(HIDE + CLEAR);
       const art = [
         '',
-        '    +============================================+',
-        '    |      T E R M I N A L   S N A K E           |',
-        '    |                D  U  E  L                  |',
-        '    +============================================+',
+        '   +======================================+',
+        '   |       T E R M I N A L   S N A K E    |',
+        '   |           P O N G   B A L L          |',
+        '   +======================================+',
         '',
-        '              왼손  v s  오른손',
+        '     *  이 터미널 창 전체가 공입니다',
+        '     *  벽에 부딪히면 자동으로 튕겨나감',
+        '     *  뱀이 길어질수록 공이 빨라져요',
         '',
-        '       LEFT (WASD)         RIGHT (ARROWS)',
-        '        @ooo  ...   vs    ...  @ooo',
+        '     *  뱀은 W A S D 로 조작',
+        '     *  R 로 재시작',
         '',
-        '          R : restart  /  first to die is ok',
-        '       ( play until both die, higher score wins )',
-        '',
-        '            >>  press any key to start  <<',
+        '        >>  press any key to start  <<',
       ];
       art.forEach((line, i) => {
-        let color = GRAY;
-        if (i >= 1 && i <= 4) color = BRIGHT_GREEN;
-        else if (i === 6) color = BOLD + YELLOW;
-        else if (i === 8) color = WHITE;
-        else if (i === 9) color = DIM + GREEN;
-        else if (i === 11) color = YELLOW;
-        else if (i === 14) color = BOLD + BRIGHT_GREEN;
-        term.write(at(3 + i, 8) + color + line + RESET);
+        let color = WHITE;
+        if (i >= 1 && i <= 4) color = BRIGHT_GREEN + BOLD;
+        else if (i >= 6 && i <= 8) color = CYAN;
+        else if (i === 10 || i === 11) color = BOLD + GREEN;
+        else if (i === 13) color = BOLD + YELLOW;
+        term.write(at(2 + i, 4) + color + line + RESET);
       });
     }
 
+    // ===================== Ball physics (terminal element bounces) =====================
+    let ballX = 0, ballY = 0;
+    let ballVX = 0, ballVY = 0;
+    const BASE_VX = 2.4;
+    const BASE_VY = 1.8;
+    const MAX_V = 28;
+    let bounceFlashT = 0;
+
+    function resetBallVelocity() {
+      const sx = Math.random() < 0.5 ? -1 : 1;
+      const sy = Math.random() < 0.5 ? -1 : 1;
+      ballVX = sx * BASE_VX;
+      ballVY = sy * BASE_VY;
+    }
+
+    function applySpeedMult() {
+      const sx = ballVX >= 0 ? 1 : -1;
+      const sy = ballVY >= 0 ? 1 : -1;
+      ballVX = sx * Math.min(MAX_V, BASE_VX * speedMult);
+      ballVY = sy * Math.min(MAX_V, BASE_VY * speedMult);
+    }
+
+    function bumpSpeed(lengthGained) {
+      speedMult += SPEED_PER_GROWTH * lengthGained;
+      applySpeedMult();
+    }
+
+    function placeBall() {
+      termEl.style.left = ballX + 'px';
+      termEl.style.top = ballY + 'px';
+    }
+
+    function centerBall() {
+      const w = termEl.offsetWidth;
+      const h = termEl.offsetHeight;
+      ballX = (window.innerWidth - w) / 2;
+      ballY = (window.innerHeight - h) / 2;
+      placeBall();
+    }
+
+    function flashBounce() {
+      termEl.classList.add('bounce');
+      bounceFlashT = 8;
+    }
+
+    function stepBall() {
+      const w = termEl.offsetWidth;
+      const h = termEl.offsetHeight;
+      const maxX = Math.max(0, window.innerWidth - w);
+      const maxY = Math.max(0, window.innerHeight - h);
+
+      ballX += ballVX;
+      ballY += ballVY;
+
+      let bounced = false;
+      if (ballX < 0) { ballX = 0; ballVX = Math.abs(ballVX); bounced = true; }
+      else if (ballX > maxX) { ballX = maxX; ballVX = -Math.abs(ballVX); bounced = true; }
+      if (ballY < 0) { ballY = 0; ballVY = Math.abs(ballVY); bounced = true; }
+      else if (ballY > maxY) { ballY = maxY; ballVY = -Math.abs(ballVY); bounced = true; }
+
+      if (bounced) {
+        flashBounce();
+      }
+
+      if (bounceFlashT > 0) {
+        bounceFlashT--;
+        if (bounceFlashT === 0) termEl.classList.remove('bounce');
+      }
+
+      placeBall();
+      requestAnimationFrame(stepBall);
+    }
+
+    window.addEventListener('resize', () => {
+      const w = termEl.offsetWidth;
+      const h = termEl.offsetHeight;
+      ballX = Math.min(Math.max(0, ballX), Math.max(0, window.innerWidth - w));
+      ballY = Math.min(Math.max(0, ballY), Math.max(0, window.innerHeight - h));
+      placeBall();
+    });
+
+    // ===================== Input =====================
     const GAME_KEYS = new Set([
-      'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
       'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyR',
     ]);
 
     function handleKey(e) {
       const code = e.code;
       if (!GAME_KEYS.has(code)) return true;
-
       e.preventDefault();
       if (e.stopPropagation) e.stopPropagation();
 
       if (!started) {
-        initAll();
+        initGame();
         return false;
       }
 
       if (code === 'KeyR') {
-        initAll();
+        initGame();
         return false;
       }
 
-      const L = boards[0];
-      const R = boards[1];
-
-      if (!L.gameOver) {
-        if (code === 'KeyW' && L.dir.y !== 1) L.nextDir = { x: 0, y: -1 };
-        else if (code === 'KeyS' && L.dir.y !== -1) L.nextDir = { x: 0, y: 1 };
-        else if (code === 'KeyA' && L.dir.x !== 1) L.nextDir = { x: -1, y: 0 };
-        else if (code === 'KeyD' && L.dir.x !== -1) L.nextDir = { x: 1, y: 0 };
-      }
-
-      if (!R.gameOver) {
-        if (code === 'ArrowUp' && R.dir.y !== 1) R.nextDir = { x: 0, y: -1 };
-        else if (code === 'ArrowDown' && R.dir.y !== -1) R.nextDir = { x: 0, y: 1 };
-        else if (code === 'ArrowLeft' && R.dir.x !== 1) R.nextDir = { x: -1, y: 0 };
-        else if (code === 'ArrowRight' && R.dir.x !== -1) R.nextDir = { x: 1, y: 0 };
+      if (!gameOver) {
+        if (code === 'KeyW' && dir.y !== 1) nextDir = { x: 0, y: -1 };
+        else if (code === 'KeyS' && dir.y !== -1) nextDir = { x: 0, y: 1 };
+        else if (code === 'KeyA' && dir.x !== 1) nextDir = { x: -1, y: 0 };
+        else if (code === 'KeyD' && dir.x !== -1) nextDir = { x: 1, y: 0 };
       }
       return false;
     }
@@ -350,7 +349,11 @@
       return handleKey(e);
     });
 
+    // ===================== Boot =====================
     splash();
+    centerBall();
+    resetBallVelocity();
+    requestAnimationFrame(stepBall);
   </script>
 </body>
 </html>

@@ -3,28 +3,39 @@ html, body {
   padding: 0;
   background: #0a0a0a;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
   font-family: Menlo, Monaco, "Courier New", monospace;
 }
 
 #terminal {
+  position: fixed;
+  top: 0;
+  left: 0;
   padding: 12px;
   background: #000;
   border: 1px solid #1f1f1f;
   border-radius: 6px;
-  box-shadow: 0 0 40px rgba(0, 255, 0, 0.08);
+  box-shadow: 0 0 40px rgba(0, 255, 0, 0.15);
+  will-change: left, top;
+  transition: box-shadow 0.12s ease-out, border-color 0.12s ease-out;
+}
+
+#terminal.bounce {
+  box-shadow: 0 0 70px rgba(0, 255, 120, 0.45);
+  border-color: #00ff88;
 }
 
 h1 {
   position: fixed;
-  top: 16px;
+  top: 14px;
   left: 50%;
   transform: translateX(-50%);
   color: #00ff88;
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 2px;
   margin: 0;
-  opacity: 0.7;
+  opacity: 0.55;
+  z-index: 100;
+  pointer-events: none;
+  user-select: none;
 }

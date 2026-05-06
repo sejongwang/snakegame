@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PNG Letter Text Editor</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="control-panel" aria-label="Editor controls">
+        <div class="brand-row">
+          <h1>PNG Letter Editor</h1>
+          <span id="assetCount" class="asset-count">0</span>
+        </div>
+
+        <label class="field text-field">
+          <span>Text</span>
+          <textarea id="textInput" spellcheck="false">Font Design</textarea>
+        </label>
+
+        <div class="glyph-panel">
+          <div class="panel-label">Letters</div>
+          <div id="glyphGrid" class="glyph-grid" aria-label="Available letters"></div>
+        </div>
+
+        <div id="selectionPanel" class="selection-panel is-disabled">
+          <div class="selected-letter-card">
+            <div id="selectedPreview" class="selected-preview">-</div>
+            <div>
+              <div class="panel-label">Selected</div>
+              <div id="selectedInfo" class="selected-info">None</div>
+            </div>
+          </div>
+          <label class="field">
+            <span>Letter size</span>
+            <input id="selectedScale" type="range" min="25" max="300" value="100" disabled>
+            <output id="selectedScaleValue">100%</output>
+          </label>
+          <button id="resetSelectedScale" class="secondary-action compact-action" type="button" disabled>Reset letter</button>
+        </div>
+
+        <div class="controls-grid">
+          <label class="field">
+            <span>Size</span>
+            <input id="fontSize" type="range" min="20" max="340" value="150">
+            <output id="fontSizeValue">150</output>
+          </label>
+
+          <label class="field">
+            <span>Tracking</span>
+            <input id="letterSpacing" type="range" min="-12" max="36" value="4">
+            <output id="letterSpacingValue">4%</output>
+          </label>
+
+          <label class="field">
+            <span>Space</span>
+            <input id="wordSpacing" type="range" min="10" max="140" value="42">
+            <output id="wordSpacingValue">42%</output>
+          </label>
+
+          <label class="field">
+            <span>Leading</span>
+            <input id="lineHeight" type="range" min="75" max="180" value="108">
+            <output id="lineHeightValue">108%</output>
+          </label>
+
+          <label class="field">
+            <span>Padding</span>
+            <input id="padding" type="range" min="0" max="220" value="80">
+            <output id="paddingValue">80</output>
+          </label>
+        </div>
+
+        <div class="segmented-group" aria-label="Horizontal alignment">
+          <button class="segment" data-align="left" type="button">Left</button>
+          <button class="segment is-active" data-align="center" type="button">Center</button>
+          <button class="segment" data-align="right" type="button">Right</button>
+        </div>
+
+        <div class="segmented-group" aria-label="Vertical alignment">
+          <button class="segment" data-valign="top" type="button">Top</button>
+          <button class="segment is-active" data-valign="middle" type="button">Middle</button>
+          <button class="segment" data-valign="bottom" type="button">Bottom</button>
+        </div>
+
+        <div class="switch-list">
+          <label class="switch-row">
+            <input id="autoGrow" type="checkbox" checked>
+            <span>Grow output</span>
+          </label>
+          <label class="switch-row">
+            <input id="autoFit" type="checkbox">
+            <span>Shrink to fit</span>
+          </label>
+          <label class="switch-row">
+            <input id="autoWrap" type="checkbox" checked>
+            <span>Wrap</span>
+          </label>
+          <label class="switch-row">
+            <input id="trimTransparent" type="checkbox">
+            <span>Trim transparent edge</span>
+          </label>
+          <label class="switch-row">
+            <input id="drawBackground" type="checkbox">
+            <span>Background</span>
+            <input id="backgroundColor" type="color" value="#f7f3ec" aria-label="Background color">
+          </label>
+        </div>
+
+        <div class="canvas-controls">
+          <label class="field compact-field">
+            <span>W</span>
+            <input id="canvasWidth" type="number" min="240" max="4000" step="10" value="1200">
+          </label>
+          <label class="field compact-field">
+            <span>H</span>
+            <input id="canvasHeight" type="number" min="240" max="4000" step="10" value="720">
+          </label>
+          <label class="field compact-field">
+            <span>Scale</span>
+            <select id="exportScale">
+              <option value="1">1x</option>
+              <option value="2" selected>2x</option>
+              <option value="4">4x</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="action-row">
+          <button id="exportPng" class="primary-action" type="button">Export PNG</button>
+          <button id="clearText" class="secondary-action" type="button">Clear</button>
+        </div>
+      </section>
+
+      <section class="preview-panel" aria-label="Preview">
+        <div class="preview-toolbar">
+          <div id="statusText" class="status-text">Ready</div>
+          <div class="preview-actions">
+            <div class="zoom-group" aria-label="Preview zoom">
+              <button id="zoomOut" class="zoom-button" type="button" aria-label="Zoom out">-</button>
+              <select id="previewZoom" aria-label="Preview zoom level">
+                <option value="fit" selected>Fit</option>
+                <option value="0.25">25%</option>
+                <option value="0.5">50%</option>
+                <option value="0.75">75%</option>
+                <option value="1">100%</option>
+                <option value="1.5">150%</option>
+                <option value="2">200%</option>
+                <option value="3">300%</option>
+                <option value="4">400%</option>
+              </select>
+              <button id="zoomIn" class="zoom-button" type="button" aria-label="Zoom in">+</button>
+            </div>
+            <div id="sizeReadout" class="size-readout">1200 x 720</div>
+          </div>
+        </div>
+        <div id="canvasStage" class="canvas-stage" tabindex="0">
+          <canvas id="letterCanvas" width="1200" height="720"></canvas>
+        </div>
+      </section>
+    </main>
+
+    <script src="assets.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
